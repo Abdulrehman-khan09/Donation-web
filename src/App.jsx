@@ -31,7 +31,7 @@ function App() {
         <Route path="/donor/register" element={<DonorRegister />} />
         <Route path="/learn-more" element={<LearnMore />} />
         <Route path="/seeker-form" element={ <SeekerForm/>} />
-        <Route path="/pilgrimage" element={<PilgrimagePlatform/>} />
+        <Route path="/details" element={<PilgrimagePlatform/>} />
         <Route path="/community" element={<CommunityPage/>} />
         <Route path="/contact" element={<ContactPage/>} />
 

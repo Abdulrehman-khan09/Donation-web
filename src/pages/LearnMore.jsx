@@ -1,4 +1,5 @@
 import { Heart, Users, Shield, Globe } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function LearnMore() {
   return (
@@ -83,18 +84,18 @@ export default function LearnMore() {
           Pilgrimage Aid is here to connect hearts with purpose.
         </p>
         <div className="space-x-4">
-          <a 
-            href="/seeker/login"
+          <Link
+            to="/seeker/login"
             className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-indigo-700"
           >
             I Am a Seeker
-          </a>
-          <a 
-            href="/donor/login"
+          </Link>
+          <Link
+            to="/donor/login"
             className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow hover:bg-green-700"
           >
             I Am a Donor
-          </a>
+          </Link>
         </div>
       </section>
 
