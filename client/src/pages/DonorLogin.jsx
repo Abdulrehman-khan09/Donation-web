@@ -88,19 +88,7 @@ const DonorLogin = () => {
               </div>
             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded transition-colors"
-                />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
-              </label>
-              <Link to="/forgot-password" className="text-sm text-green-600 hover:text-green-700 font-medium transition-colors">
-                Forgot password?
-              </Link>
-            </div>
+         
 
             {/* Submit Button */}
             <button

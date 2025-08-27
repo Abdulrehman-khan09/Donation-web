@@ -11,6 +11,7 @@ import SeekerForm from "./pages/SeekerForm";
 import PilgrimagePlatform from "./pages/PilgrimagePlatform";
 import CommunityPage from "./pages/CommunityPage";
 import ContactPage from "./pages/ContactPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
         {/* Admin */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/register" element={<AdminRegister />} />
-
+        <Route path="/admin/dashboard" element={<AdminDashboard/>} />
         {/* Donor */}
         <Route path="/donor/login" element={<DonorLogin />} />
         <Route path="/donor/register" element={<DonorRegister />} />
@@ -34,7 +35,6 @@ function App() {
         <Route path="/details" element={<PilgrimagePlatform/>} />
         <Route path="/community" element={<CommunityPage/>} />
         <Route path="/contact" element={<ContactPage/>} />
-
       </Routes>
 
   );

@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, Shield, Heart } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(""); 
+  const [loading, setLoading] = useState(false)
+   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -13,11 +18,32 @@ const AdminLogin = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Admin Login:', formData);
-  };
 
+    try {
+      const backendUrl = import.meta.env.BACKEND_URL || "http://localhost:8000";
+      const response = await axios.post("http://localhost:8000/admin/login", {
+        email: formData.email,
+        password: formData.password
+      });
+
+      console.log("Login success:", response.data);
+
+      // save token or user data in localStorage
+      if (response.data.token) {
+        localStorage.setItem("adminToken", response.data.token);
+      }
+         setSuccessMessage("✅ Admin logged in  successfully redirecting to Dashboard!");
+    setLoading(false)
+    setTimeout(() => {
+      navigate("/admin/dashboard"); // 👈 redirect after login
+    }, 3000);
+    } catch (error) {
+      console.error("Login failed:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Login failed");
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -31,6 +57,38 @@ const AdminLogin = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Portal</h1>
           <p className="text-gray-600">Secure access to platform management</p>
         </div>
+
+
+          {/* 🔥 Success Message */}
+          {successMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-green-100 border border-green-300 text-green-800 text-sm font-medium">
+              {successMessage}
+            </div>
+          )}
+
+             {loading ? (
+              <svg
+                className="animate-spin h-5 w-5 mr-2 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            ) : null}
+
 
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 backdrop-blur-sm">
@@ -101,20 +159,7 @@ const AdminLogin = () => {
               </div>
             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-colors"
-                />
-                <span className="ml-2 text-sm text-gray-600">Remember this device</span>
-              </label>
-              <Link to="/admin/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
-                Forgot password?
-              </Link>
-            </div>
-
+          
             {/* Submit Button */}
             <button
               type="submit"
