@@ -12,6 +12,7 @@ import PilgrimagePlatform from "./pages/PilgrimagePlatform";
 import CommunityPage from "./pages/CommunityPage";
 import ContactPage from "./pages/ContactPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import DonorDashboard from "./pages/DonorDashboard";
 
 function App() {
   return (
@@ -30,6 +31,8 @@ function App() {
         {/* Donor */}
         <Route path="/donor/login" element={<DonorLogin />} />
         <Route path="/donor/register" element={<DonorRegister />} />
+        <Route path="/donor/dashboard" element={<DonorDashboard />} />
+
         <Route path="/learn-more" element={<LearnMore />} />
         <Route path="/seeker-form" element={ <SeekerForm/>} />
         <Route path="/details" element={<PilgrimagePlatform/>} />
