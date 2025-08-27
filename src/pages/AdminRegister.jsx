@@ -7,14 +7,12 @@ const AdminRegister = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
-    organization: "",
-    role: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
     securityClearance: false
   });
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
