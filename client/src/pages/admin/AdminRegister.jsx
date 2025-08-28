@@ -1,9 +1,16 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, Heart, Gift, Phone, MapPin } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Heart, Shield, Phone, Building } from 'lucide-react';
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const DonorRegister = () => {
+const AdminRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
+   const [successMessage, setSuccessMessage] = useState(""); 
+   const [errorMessage, seterrorMessage] = useState('')
+
+     const [loading, setLoading] = useState(false)
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -11,6 +18,8 @@ const DonorRegister = () => {
     confirmPassword: "",
     agreeToTerms: false,
   });
+
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,28 +29,87 @@ const DonorRegister = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
-      return;
-    }
-    console.log("Donor Register Data:", formData);
-  };
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (formData.password !== formData.confirmPassword) {
+    seterrorMessage("Passwords don't match!");
+    return;
+  }
+   setLoading(true)
+
+  try {
+    const backendUrl = import.meta.env.BACKEND_URL || "http://localhost:8000";
+    const response = await axios.post(`${backendUrl}/admin/register`, {
+      fullname: formData.name, 
+      email: formData.email,
+      password: formData.password,
+    });
+    console.log("Registration success:", response.data);
+    setSuccessMessage("✅ Admin registered successfully redirecting to Login!");
+    setLoading(false)
+    setTimeout(() => {
+      navigate('/admin/login');
+    }, 3000);
+    
+    // alert("Admin registered successfully!");
+  } catch (error) {
+    console.error("Registration failed:", error.response?.data || error.message);
+    // alert( `${error.response?.data?.message || 'Registration failed. Please try again.'}` );
+    seterrorMessage(`${error.message}`);
+  }
+};
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-green-100 p-4 rounded-full shadow-lg">
-              <Gift className="h-8 w-8 text-green-600" />
+            <div className="bg-indigo-100 p-4 rounded-full shadow-lg">
+              <Shield className="h-8 w-8 text-indigo-600" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Become a Donor</h1>
-          <p className="text-gray-600">Join our community of generous hearts</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Registration</h1>
+          <p className="text-gray-600">Request access to platform administration</p>
         </div>
+
+          {/* 🔥 Success Message */}
+          {successMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-green-100 border border-green-300 text-green-800 text-sm font-medium">
+              {successMessage}
+            </div>
+          )}
+          {/* 🔥 Success Message */}
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-red-100 border border-red-300 text-red-800 text-sm font-medium">
+              {errorMessage}
+            </div>
+          )}
+
+            {loading ? (
+              <svg
+                className="animate-spin h-5 w-5 mr-2 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            ) : null}
 
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100 backdrop-blur-sm">
@@ -60,7 +128,7 @@ const DonorRegister = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   placeholder="Enter your full name"
                   required
                 />
@@ -70,7 +138,7 @@ const DonorRegister = () => {
             {/* Email Field */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700">
-                Email Address
+                Official Email Address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -81,14 +149,16 @@ const DonorRegister = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                  placeholder="Enter your email"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Enter official email"
                   required
                 />
               </div>
             </div>
 
-          
+           -
+
+           
 
             {/* Password Field */}
             <div className="space-y-2">
@@ -104,8 +174,8 @@ const DonorRegister = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                  placeholder="Create a password"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Create a secure password"
                   required
                 />
                 <button
@@ -136,7 +206,7 @@ const DonorRegister = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   placeholder="Confirm your password"
                   required
                 />
@@ -145,37 +215,39 @@ const DonorRegister = () => {
 
             {/* Checkboxes */}
             <div className="space-y-3">
+             
+
               <div className="flex items-start space-x-3">
                 <input
                   type="checkbox"
                   name="agreeToTerms"
                   checked={formData.agreeToTerms}
                   onChange={handleChange}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1"
                   required
                 />
                 <label className="text-sm text-gray-600 leading-relaxed">
                   I agree to the{' '}
-                  <Link to="/terms" className="text-green-600 hover:text-green-700 font-medium">
-                    Terms of Service
+                  <Link to="/admin-terms" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                    Admin Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link to="/privacy" className="text-green-600 hover:text-green-700 font-medium">
-                    Privacy Policy
+                  <Link to="/admin-policy" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                    Admin Code of Conduct
                   </Link>
                 </label>
               </div>
-
-         
             </div>
 
+          
+            
             {/* Submit Button */}
             <button
               type="submit"
               disabled={!formData.agreeToTerms}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 px-4 rounded-xl font-semibold hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Start Your Giving Journey
+              Submit Admin Request
             </button>
           </form>
 
@@ -186,7 +258,7 @@ const DonorRegister = () => {
                 <div className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">Already have an account?</span>
+                <span className="px-4 bg-white text-gray-500">Already have admin access?</span>
               </div>
             </div>
           </div>
@@ -194,10 +266,10 @@ const DonorRegister = () => {
           {/* Login Link */}
           <div className="mt-6 text-center">
             <Link
-              to="/donor/login"
-              className="inline-flex items-center justify-center w-full py-3 px-4 border border-green-200 rounded-xl text-green-600 font-semibold hover:bg-green-50 transition-all duration-200 hover:scale-[1.02]"
+              to="/admin/login"
+              className="inline-flex items-center justify-center w-full py-3 px-4 border border-indigo-200 rounded-xl text-indigo-600 font-semibold hover:bg-indigo-50 transition-all duration-200 hover:scale-[1.02]"
             >
-              Sign In Instead
+              Sign In to Admin Panel
             </Link>
           </div>
         </div>
@@ -206,7 +278,7 @@ const DonorRegister = () => {
         <div className="mt-8 text-center">
           <div className="flex items-center justify-center space-x-2 text-gray-500">
             <Heart className="h-4 w-4 text-red-400" />
-            <span className="text-sm">Join thousands making a difference</span>
+            <span className="text-sm">Protecting our community with integrity</span>
           </div>
         </div>
       </div>
@@ -214,4 +286,4 @@ const DonorRegister = () => {
   );
 };
 
-export default DonorRegister;
+export default AdminRegister;

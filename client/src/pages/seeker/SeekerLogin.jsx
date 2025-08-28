@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, Heart, User } from 'lucide-react';
+import axios from 'axios';
 
 const SeekerLogin = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -13,9 +18,40 @@ const SeekerLogin = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Seeker Login:', formData);
+    setError("");
+    setLoading(true);
+    
+    try {
+      const response = await axios.post('http://localhost:8000/seeker/login', {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data.token) {
+        // Store token in localStorage
+        localStorage.setItem('seekerToken', response.data.token);
+        localStorage.setItem('seekerData', JSON.stringify(response.data.seeker));
+        
+        // Redirect to seeker form
+        setSuccessMessage("Login successful! Redirecting to your form...");
+         setTimeout(() => {
+          navigate('/seeker-form')
+         }, 1500);
+        
+      }
+    } catch (error) {
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.response?.data?.errors) {
+        setError(error.response.data.errors[0].msg);
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -90,12 +126,27 @@ const SeekerLogin = () => {
 
           
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* success Message */}
+          {successMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-green-100 border border-green-300 text-green-800 text-sm font-medium">
+              {successMessage}
+            </div>
+          )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] shadow-lg"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In to Continue
+              {loading ? "Signing In..." : "Sign In to Continue"}
             </button>
           </form>
 

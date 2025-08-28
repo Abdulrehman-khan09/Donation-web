@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, Heart, Gift } from 'lucide-react';
+import axios from 'axios';
 
 const DonorLogin = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -13,9 +18,41 @@ const DonorLogin = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Donor Login:', formData);
+    setError("");
+    setLoading(true);
+    
+    try {
+      const response = await axios.post('http://localhost:8000/donor/login', {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data.token) {
+        // Store token in localStorage
+        localStorage.setItem('donorToken', response.data.token);
+        localStorage.setItem('donorData', JSON.stringify(response.data.donor));
+        
+        // Redirect to donor dashboard
+        
+        setSuccessMessage("Login successful! Redirecting to your dashboard...");
+        setTimeout(() => {
+          navigate('/donor/dashboard');
+        }, 1500);
+        
+      }
+    } catch (error) {
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.response?.data?.errors) {
+        setError(error.response.data.errors[0].msg);
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -90,12 +127,28 @@ const DonorLogin = () => {
 
          
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            
+          {/* 🔥 Success Message */}
+          {successMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-green-100 border border-green-300 text-green-800 text-sm font-medium">
+              {successMessage}
+            </div>
+          )}
+       
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] shadow-lg"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In to Give
+              {loading ? "Signing In..." : "Sign In to Give"}
             </button>
           </form>
 

@@ -1,11 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User, Heart, CheckCircle } from 'lucide-react';
+import axios from 'axios';
 
 const SeekerRegister = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    name: "",
+    fullname: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -20,13 +25,52 @@ const SeekerRegister = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+      setError("Passwords don't match!");
       return;
     }
-    console.log("Seeker Register Data:", formData);
+    
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const response = await axios.post('http://localhost:8000/seeker/register', {
+        fullname: formData.fullname,
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data.token) {
+        // Store token in localStorage
+        localStorage.setItem('seekerToken', response.data.token);
+        localStorage.setItem('seekerData', JSON.stringify(response.data.seeker));
+        
+        // Redirect to seeker login
+        setSuccessMessage("Registration successful! Redirecting to login...");
+        setTimeout(() => {
+          navigate('/seeker/login');
+        }, 1500);
+
+      }
+    } catch (error) {
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.response?.data?.errors) {
+        setError(error.response.data.errors[0].msg);
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,8 +101,8 @@ const SeekerRegister = () => {
                 </div>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="fullname"
+                  value={formData.fullname}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   placeholder="Enter your full name"
@@ -163,13 +207,28 @@ const SeekerRegister = () => {
               </label>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Success Message */}
+
+          {successMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-green-100 border border-green-300 text-green-800 text-sm font-medium">
+              {successMessage}
+            </div>
+          )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!formData.agreeToTerms}
+              disabled={!formData.agreeToTerms || loading}
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Create Your Account
+              {loading ? "Creating Account..." : "Create Your Account"}
             </button>
           </form>
 
